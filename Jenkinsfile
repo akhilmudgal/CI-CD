@@ -2,18 +2,18 @@ pipeline {
     agent any
 
     environment {
-	APPLICATION = 'proxy-next'
-	ENV_NAME = 'prod-proxy-next'
+	APPLICATION = 'application-name'
+	ENV_NAME = 'prod-application-name'
         VROLE = credentials('vault_role')
         VSID  = credentials('vault_sid')
-        REPO_URL = 'git@github.com:DevnagriAI/dota-proxy.git'
-        BRANCH = 'next'
-        GCP_PROJECT = 'striking-canyon-392409'
-        GCP_ZONE = 'asia-south1-a'
-        INSTANCE_NAME = 'preprod-proxy-next'
-        USER = 'ubuntu' 	
+        REPO_URL = 'git@github.com:repo-url/repo-name.git'
+        BRANCH = 'branch-name'
+        GCP_PROJECT = 'project-name'
+        GCP_ZONE = 'project-location'
+        INSTANCE_NAME = 'VM-name'
+        USER = 'user-name' 	
 	BUILD_NUMBER= "${env.BUILD_NUMBER}"
-        IG_NAME = 'proxy-next-autoscalling-ig'
+        IG_NAME = 'application-name-autoscalling-ig'
         IMAGE_NAME = "${INSTANCE_NAME}-prod-image-v${BUILD_NUMBER}"
     }
 
@@ -53,12 +53,12 @@ pipeline {
                         INSTANCE_IP=$(gcloud compute instances describe ${INSTANCE_NAME} --zone=${GCP_ZONE} --format='get(networkInterfaces[0].networkIP)')
 			/var/lib/jenkins/scripts/vault.sh
 			sleep 10
-                        rsync -e "ssh -o StrictHostKeyChecking=no" -avz /var/lib/jenkins/vault/proxy-next.env ${USER}@${INSTANCE_IP}:/home/${USER}/proxy.devnagri.com/.env
-                        rsync -e "ssh -o StrictHostKeyChecking=no" --exclude='template_properties.json' --exclude='.git/' -avz . ${USER}@${INSTANCE_IP}:/home/${USER}/proxy.devnagri.com/
-                        ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd proxy.devnagri.com;npm i'
-			ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd proxy.devnagri.com;npm run lint:fix'
-                        ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd proxy.devnagri.com;npm run prod:build'
-                        ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd proxy.devnagri.com;pm2 restart all'
+                        rsync -e "ssh -o StrictHostKeyChecking=no" -avz /var/lib/jenkins/vault/proxy-next.env ${USER}@${INSTANCE_IP}:/home/${USER}/${APPLICATION}/.env
+                        rsync -e "ssh -o StrictHostKeyChecking=no" --exclude='template_properties.json' --exclude='.git/' -avz . ${USER}@${INSTANCE_IP}:/home/${USER}/${APPLICATION}/
+                        ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd ${APPLICATION};npm i'
+			ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd ${APPLICATION};npm run lint:fix'
+                        ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd ${APPLICATION};npm run prod:build'
+                        ssh -o StrictHostKeyChecking=no ${USER}@${INSTANCE_IP} 'cd ${APPLICATION};pm2 restart all'
 
                     '''
                 }
